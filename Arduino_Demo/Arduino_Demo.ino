@@ -2,11 +2,10 @@
 //
 //  Code written for Arduino Uno
 //
-//  CRYSTALFONTZ CHARACTER OLED IN SPI MODE
+//  CRYSTALFONTZ CHARACTER OLEDs using the WS0010
 //
-//  ref: https://www.crystalfontz.com/product/cfal1602c-16x2-character-oled
+//  See README.md for
 //
-//  2015 - 10 - 22 Brent A. Crosby
 //===========================================================================
 //This is free and unencumbered software released into the public domain.
 //
@@ -33,6 +32,13 @@
 //
 //For more information, please refer to <http://unlicense.org/>
 //===========================================================================
+
+//Determine which interface to use
+//Can be set to SPI or PARALLEL
+// #define SPI
+#define PARALLEL
+
+#ifdef SPI
 //Software SPI (10-bit transfers, difficult to do using the hardware SPI)
 #define SPIPORT (PORTB)
 #define SPITOGGLE (PINB)
@@ -53,13 +59,35 @@
 #define CLR_MOSI (PORTB &= ~(MOSI_MASK))
 #define SET_MOSI (PORTB |= (MOSI_MASK))
 // DB2 (0x04) is SS   (output) gray   OLED pin 16
-#define SPI_SS_PIN (10)
-#define SS_MASK (0x04)
+#define SPI_SS_PIN (9)
+#define SS_MASK (0x02)
 #define CLR_SS (PORTB &= ~(SS_MASK))
 #define SET_SS (PORTB |= (SS_MASK))
+#endif
+
+#ifdef PARALLEL
+//Set up for parallel 6800
+#define CLR_RS (PORTB &= ~(0x01)) //pin #8  - Data/Instruction
+#define SET_RS (PORTB |= (0x01))  //pin #8  - Data/Instruction
+#define CLR_E (PORTB &= ~(0x02))  //pin #9  - Chip Enable Signal
+#define SET_E (PORTB |= (0x02))   //pin #9  - Chip Enable Signal
+#define CLR_RW (PORTB &= ~(0x04)) //pin #10 - Read/Write
+#define SET_RW (PORTB |= (0x04))  //pin #10 - Read/Write
+
+//PORTD will have the parallel data lines if a parallel interface is selected
+#define LCD_DATA (PORTD)
+#endif
 
 #define DATA (1)
 #define COMMAND (0)
+
+// Set up macros to convert sendData/sendCommand to the 3 wire SPI function
+#ifdef SPI
+#define sendData(data) (write_to_OLED_SPI(DATA, data))
+#define sendCommand(command) (write_to_OLED_SPI(COMMAND, command))
+#endif
+
+#ifdef SPI
 //===========================================================================
 void write_to_OLED_SPI(uint8_t destination, uint8_t data)
 {
@@ -194,15 +222,87 @@ void write_to_OLED_SPI(uint8_t destination, uint8_t data)
   digitalWrite(SPI_SS_PIN, HIGH);
 #endif
 }
+#endif
+#ifdef PARALLEL
+void sendCommand(uint8_t command)
+{
+  checkBusy();
+
+  //Put the command on the port
+  LCD_DATA = command;
+
+  // Select the LCD's command register
+  CLR_RS;
+
+  CLR_RW;
+
+  // Deselect the LCD controller
+  SET_E;
+  CLR_E;
+}
+
+//----------------------------------------------------------------------------
+uint8_t sendData(uint8_t data)
+{
+  //Put the data on the port
+  LCD_DATA = data;
+
+  // Select the LCD's command register
+  SET_RS;
+
+  CLR_RW;
+
+  // Deselect the LCD controller
+  SET_E;
+  CLR_E;
+}
+
+uint8_t checkBusy()
+{
+  PORTD = 0x80;
+  DDRD = 0x00;
+
+  CLR_RS;
+
+  SET_RW;
+
+  // Select the LCD controller
+  SET_E;
+
+  //Watch Pin 7 for the busy flag
+  while (0x80 == (PIND & 0x80))
+    ;
+  CLR_E;
+
+  DDRD = 0xFF;
+
+  CLR_RW;
+
+  return LCD_DATA;
+}
+#endif
+
 //===========================================================================
 void position_cursor(uint8_t column, uint8_t line)
 {
   //Set CGRAM Address, RS=0,R/W=0
   // 7654 3210
   // 1AAA AAAA
-  //  0x00 to 0x27 => Line 1
-  //  0x40 to 0x67 => Line 2
-  write_to_OLED_SPI(COMMAND, 0x80 | (line ? 0x40 : 0x00) | (column & 0x3F));
+  //  0x00 to 0x13 => Line 1
+  //  0x40 to 0x53 => Line 2
+  //  0x14 to 0x27 => Line 3
+  //  0x54 to 0x67 => Line 4
+
+//if the line is either line 0 or 1
+  if(line < 2)
+  {
+  sendCommand(0x80 | (line ? 0x40 : 0x00) | (column & 0x3F));
+  return;
+  }
+  
+  //if the line is either line 2 or 3
+  line = line-2;
+  sendCommand(0x80 | (line ? 0x54 : 0x14) | (column & 0x3F));
 }
 //===========================================================================
 // According to the WS0010 data sheet, only the clear display time has
@@ -212,7 +312,7 @@ void clear_display(void)
   //Display Clear RS=0,R/W=0
   // 7654 3210
   // 0000 0001
-  write_to_OLED_SPI(COMMAND, 0x01);
+  sendCommand(0x01);
   _delay_ms(6);
 }
 //===========================================================================
@@ -235,14 +335,14 @@ void initialize_display()
   //     FT=01 is Western European I fractions, circle-c some arrows
   //     FT=10 is English/Russian
   //     FT=11 is Western European II my favorite, arrows, Greek letters
-  write_to_OLED_SPI(COMMAND, 0x3B);
+  sendCommand(0x3B);
 
   //Graphic vs character mode setting, RS=0,R/W=0
   // 7654 3210
   // 0001 GP11
   //  G = Mode: 1=graphic, 0=character
   //  C = Power: 1=0n, 0=off
-  write_to_OLED_SPI(COMMAND, 0x17);
+  sendCommand(0x17);
 
   //Display On/Off Control RS=0,R/W=0
   // 7654 3210
@@ -250,7 +350,7 @@ void initialize_display()
   //  D = Display On
   //  C = Cursor On
   //  B = Cursor Blink
-  write_to_OLED_SPI(COMMAND, 0x0E);
+  sendCommand(0x0E);
 
   //Display Clear RS=0,R/W=0
   // 7654 3210
@@ -258,26 +358,28 @@ void initialize_display()
   clear_display();
 
   //Display home
-  write_to_OLED_SPI(COMMAND, 0x02);
+  sendCommand(0x02);
 
   //Entry Mode Set RS=0,R/W=0
   // 7654 3210
   // 0000 01IS
   //  I = Increment/or decrement
   //  S = Shift(scroll) data on line
-  write_to_OLED_SPI(COMMAND, 0x06);
+  sendCommand(0x06);
 
   //Display Clear RS=0,R/W=0
   // 7654 3210
   // 0000 0001
+  delay(2000);
   clear_display();
+  delay(2000);
 }
 //===========================================================================
 void setup()
 {
-  Serial.begin(115200);
   //General setup, port directions.
 
+#ifdef SPI
   // PB5 (0x20) is SCK  (output) green  OLED pin 12
   pinMode(SPI_SCK_PIN, OUTPUT);
   // PB4 (0x10) is MISO (input)  blue   OLED pin 13
@@ -287,6 +389,18 @@ void setup()
   pinMode(SPI_MOSI_PIN, OUTPUT);
   // DB2 (0x04) is SS   (output) gray   OLED pin 16
   pinMode(SPI_SS_PIN, OUTPUT);
+#endif
+
+#ifdef PARALLEL
+  DDRD = 0xff;
+  DDRB = 0x07;
+  PORTD = 0x00;
+  PORTB = 0x00;
+#endif
+
+  // Initialize the display
+  initialize_display();
+  CLR_RW;
 }
 //===========================================================================
 void loop()
@@ -296,9 +410,6 @@ void loop()
   //
   //Then there is a screen with solid characters on the left, and 50%
   //checkerboard characters on the right.
-
-  // Initialize the display
-  initialize_display();
 
   //Display text screen
   //              0123456789012345
@@ -325,54 +436,55 @@ void loop()
   position_cursor(0, 0);
   for (int col = 0; col < 16; col++)
   {
-    write_to_OLED_SPI(DATA, line1[col]);
+    sendData(line1[col]);
   }
 
   // write to the second line
   position_cursor(0, 1);
   for (int col = 0; col < 16; col++)
   {
-    write_to_OLED_SPI(DATA, line2[col]);
+    sendData(line2[col]);
   }
 
   //Show the text message for a bit
   _delay_ms(1000);
+  clear_display();
 
   //Use the custom characters (CGRAM) to make the
   //left half solid, the right half checkerboard
 
   //Set CGRAM [0], to solid
-  write_to_OLED_SPI(COMMAND, 0x40 | (0 << 3));
+  sendCommand(0x40 | (0 << 3));
   for (int i = 1; i <= 8; i++)
-    write_to_OLED_SPI(DATA, 0xFF);
+    sendData(0xFF);
   //Set CGRAM [1], checkerboard
-  write_to_OLED_SPI(COMMAND, 0x40 | (1 << 3));
+  sendCommand(0x40 | (1 << 3));
   for (int i = 1; i <= 4; i++)
   {
-    write_to_OLED_SPI(DATA, 0xAA);
-    write_to_OLED_SPI(DATA, 0x55);
+    sendData(0xAA);
+    sendData(0x55);
   }
 
   // write to the first line
   position_cursor(0, 0);
   for (int col = 0; col < 8; col++)
   {
-    write_to_OLED_SPI(DATA, 0); // CGRAM[0]
+    sendData(0); // CGRAM[0]
   }
   for (int col = 8; col < 16; col++)
   {
-    write_to_OLED_SPI(DATA, 1); // CGRAM[1]
+    sendData(1); // CGRAM[1]
   }
 
   // write to the second line
   position_cursor(0, 1);
   for (int col = 0; col < 8; col++)
   {
-    write_to_OLED_SPI(DATA, 0); // CGRAM[0]
+    sendData(0); // CGRAM[0]
   }
   for (int col = 8; col < 16; col++)
   {
-    write_to_OLED_SPI(DATA, 1); // CGRAM[1]
+    sendData(1); // CGRAM[1]
   }
 
   //Show the pattern for a bit
