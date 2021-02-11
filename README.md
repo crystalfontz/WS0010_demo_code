@@ -19,7 +19,7 @@ Below is a full list of parts that we offer that use this controller.
 [CFAL2002AY](https://www.crystalfontz.com/product/CFAL2002AY)\
 [CFAL2004AY](https://www.crystalfontz.com/product/CFAL2004AY)\
 [CFAL5016APY](https://www.crystalfontz.com/product/CFAL5016APY)\
-[CFAL5016AY](https://www.crystalfontz.com/product/CFAL5016AY)\
+[CFAL5016AY](https://www.crystalfontz.com/product/CFAL5016AY)
 
 
 ## Connection Details
@@ -28,24 +28,29 @@ Below is a full list of parts that we offer that use this controller.
 |-------------------|---------------|-----------------------------------
 | GND               | GND           | Ground
 | 3v3               | 3v3           | Voltage in
-| RES               | D9            | Reset pin
-| DNC               | no connect    | Do not connect
-| DC (RS)           | D8            | Data or Command Register Select
-| CS                | D10           | Chip Select
-| RD/E              | DNC           | Read (8080) or Enable (6800)
-| WR/RW             | DNC           | Write (9090) or Read/Write (6800)
-| D0                | DNC           | Data pin 0
-| D1                | DNC           | Data pin 1
-| D2                | DNC           | Data pin 2
-| D3                | DNC           | Data pin 3
-| D4                | DNC           | Data pin 4
-| D5                | DNC           | Data pin 5
-| D6/CLK            | D13           | Data pin 6 or Clock pin for SPI
-| D7/MOSI           | D11           | Data pin 7 or MOSI pin for SPI
+| CS                | D9            | Chip Select
+| MOSI              | D11           | Master Out Slave In
+| MISO              | D12           | Master In Slave Out
+| SCK               | D13           | Serial Clock
+
 
 #### Parallel Configuration
-This code currently only demonstrates using the SPI interface.
+| Display Pin       | Seeeduino Pin | Connection Description            
+|-------------------|---------------|-----------------------------------
+| GND               | GND           | Ground
+| 3v3               | 3v3           | Voltage in
+| DC (RS)           | D8            | Data or Command Register Select
+| CS                | D9            | Chip Select
+| WR/RW             | D10           | Write (9090) or Read/Write (6800)
+| D0                | D0            | Data pin 0
+| D1                | D1            | Data pin 1
+| D2                | D2            | Data pin 2
+| D3                | D3            | Data pin 3
+| D4                | D4            | Data pin 4
+| D5                | D5            | Data pin 5
+| D6                | D6            | Data pin 6 or Clock pin for SPI
+| D7                | D7            | Data pin 7 or MOSI pin for SPI
 
 #### I2C Configuration
-This code currently only demonstrates using the SPI interface.
+This code currently only demonstrates using the SPI and parallel interface.
 
