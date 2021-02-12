@@ -17,9 +17,7 @@ Below is a full list of parts that we offer that use this controller.
 [CFAL1602CYT](https://www.crystalfontz.com/product/CFAL1602CYT)\
 [CFAL1602L0Y](https://www.crystalfontz.com/product/CFAL1602L0Y)\
 [CFAL2002AY](https://www.crystalfontz.com/product/CFAL2002AY)\
-[CFAL2004AY](https://www.crystalfontz.com/product/CFAL2004AY)\
-[CFAL5016APY](https://www.crystalfontz.com/product/CFAL5016APY)\
-[CFAL5016AY](https://www.crystalfontz.com/product/CFAL5016AY)
+[CFAL2004AY](https://www.crystalfontz.com/product/CFAL2004AY)
 
 
 ## Connection Details
