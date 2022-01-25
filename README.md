@@ -15,7 +15,7 @@ Below is a full list of parts that we offer that use this controller.
 [CFAL1602CW](https://www.crystalfontz.com/product/CFAL1602CW)\
 [CFAL1602CY](https://www.crystalfontz.com/product/CFAL1602CY)\
 [CFAL1602CYT](https://www.crystalfontz.com/product/CFAL1602CYT)\
-[CFAL1602L0Y](https://www.crystalfontz.com/product/CFAL1602L0Y)\
+[CFAL1602H0Y](https://www.crystalfontz.com/product/CFAL1602H0Y)\
 [CFAL2002AY](https://www.crystalfontz.com/product/CFAL2002AY)\
 [CFAL2004AY](https://www.crystalfontz.com/product/CFAL2004AY)
 
@@ -39,7 +39,7 @@ Below is a full list of parts that we offer that use this controller.
 | 3v3               | 3v3           | Voltage in
 | DC (RS)           | D8            | Data or Command Register Select
 | CS                | D9            | Chip Select
-| WR/RW             | D10           | Write (9090) or Read/Write (6800)
+| WR/RW             | D10           | Write (8080) or Read/Write (6800)
 | D0                | D0            | Data pin 0
 | D1                | D1            | Data pin 1
 | D2                | D2            | Data pin 2
