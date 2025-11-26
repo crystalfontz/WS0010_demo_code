@@ -32,6 +32,34 @@
 //
 //For more information, please refer to <http://unlicense.org/>
 //===========================================================================
+// This is for the CFAL2004AY
+// SPI Configuration
+// | Display Pin | Seeeduino Pin | Connection Description |
+// | :---------- | :-----------: | ---------------------: |
+// | GND         | GND	         | Ground                 |
+// | 5v          | 5v            | Voltage in             |
+// | CS          | D9            | Chip Select            |
+// | MOSI        | D11           | Master Out Slave In    |
+// | MISO        | D12           | Master In Slave Out    |
+// | SCK         | D13           | Serial Clock           |
+
+// Parallel Configuration
+// | Display Pin | Seeeduino Pin |      Connection Description     |
+// | :---------- | :-----------: | ------------------------------: |
+// | GND         | GND	         | Ground                          |
+// | 5v          | 5v            | Voltage in                      |
+// | DC (RS)     | D8            | Data/Command Register Select    |
+// | CS          | D9            | Chip Select                     |
+// | WR/RW       | D10           | Write(8080) or Read/Write(6800) |
+// | D0          | D0            | Data pin 0                      |
+// | D1          | D1            | Data pin 1                      |
+// | D2          | D2            | Data pin 2                      |
+// | D3          | D3            | Data pin 3                      |
+// | D4          | D4            | Data pin 4                      |
+// | D5          | D5            | Data pin 5                      |
+// | D6          | D6            | Data pin 6 or Clock pin for SPI |
+// | D7          | D7            | Data pin 7 or MOSI pin for SPI  |
+//===========================================================================
 
 //Determine which interface to use
 //Can be set to SPI or PARALLEL
